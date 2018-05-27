@@ -1,23 +1,22 @@
 package servidorcentral;
 
+import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import javax.jws.WebService;
+import javax.xml.namespace.QName;
+import javax.xml.ws.Service;
 import servidorclima.ServicioClimaAbstract;
 import servidorhoroscopo.ServicioHoroscopoAbstract;
 
-/**
- *
- * @author Martin
- */
 @WebService(endpointInterface = "servidorcentral.ServicioCentralAbstract")
 public class ServicioCentral implements ServicioCentralAbstract {
 
     private String ipClima;
     private String portClima;
-    private String ipHorosc;
-    private String portHorosc;
+    private String ipHoroscopo;
+    private String portHoroscopo;
 
     private HashMap<String, String> cacheWeather;
     private HashMap<String, String> cacheHoroscope;
@@ -29,32 +28,31 @@ public class ServicioCentral implements ServicioCentralAbstract {
             HashMap<String, String> cacheHorosc, HashMap<String, String> cacheClima) {
         this.ipClima = ipClima;
         this.portClima = portClima;
-        this.ipHorosc = ipHorosc;
-        this.portHorosc = portHorosc;
+        this.ipHoroscopo = ipHorosc;
+        this.portHoroscopo = portHorosc;
         this.cacheHoroscope = cacheHorosc;
         this.cacheWeather = cacheClima;
     }
 
     @Override
     public String askClimaHoroscopo(String query) {
-        /*String answer;
+        String answer;
 
-         System.out.println("Cliente> Consulta: " + query);
+        System.out.println("Cliente> Consulta: " + query);
 
-         //extraer fecha y horoscopo de query
-         try {
-         String date = query.split(",")[0].substring(1);
-         String hAux = query.split(",")[1];
-         String sign = hAux.substring(0, hAux.length() - 1);
-         String answerW = askClima(date);
-         String answerH = askHoroscopo(sign);
-         answer = "Horóscopo: " + answerH + "\nClima: " + answerW;
-         } catch (Exception e) {
-         answer = "Formato de consulta invalido, pruebe: (fecha,signo).";
-         }
+        //extraer fecha y horoscopo de query
+        try {
+            String date = query.split(",")[0].substring(1);
+            String hAux = query.split(",")[1];
+            String sign = hAux.substring(0, hAux.length() - 1);
+            String answerW = askClima(date);
+            String answerH = askHoroscopo(sign);
+            answer = "Horóscopo: " + answerH + "\nClima: " + answerW;
+        } catch (Exception e) {
+            answer = "Formato de consulta invalido, pruebe: (fecha,signo).";
+        }
 
-         return answer;*/
-        return "OlaKeAseh "+query;
+        return answer;
     }
 
     private String askHoroscopo(String sign) {
@@ -70,8 +68,13 @@ public class ServicioCentral implements ServicioCentralAbstract {
                 //consultar el horoscopo
                 ServicioHoroscopoAbstract srv;
                 try {
-                    //srv = (ServiciosHoroscopoAbstract) Naming.lookup("//" + ipHorosc + ":" + portHorosc + "/ServiciosHoroscopo");
-                    //answerH = srv.askHoroscopo(sign);
+                    URL url = new URL("http://" + ipHoroscopo + ":" + portHoroscopo + "/ws/horoscopo?wsdl");
+                    QName qname = new QName("http://servidorhoroscopo/", "ServicioHoroscopoService");
+
+                    Service service = Service.create(url, qname);
+                    ServicioHoroscopoAbstract servidorHoroscopo = service.getPort(ServicioHoroscopoAbstract.class);
+
+                    answerH = servidorHoroscopo.askHoroscopo(sign);
                     cacheHoroscope.put(sign, answerH);
                 } catch (Exception ex) {
                     answerH = "El servidor de horoscopo no esta disponible, consulte mas tarde.";
@@ -101,8 +104,13 @@ public class ServicioCentral implements ServicioCentralAbstract {
                 System.out.println("Servidor> Consultando a servidor de clima...");
                 ServicioClimaAbstract srv;
                 try {
-                    //srv = (ServiciosClimaAbstract) Naming.lookup("//" + ipClima + ":" + portClima + "/ServiciosClima");
-                    //answerW = srv.askClima(date);
+                    URL url = new URL("http://" + ipClima + ":" + portClima + "/ws/clima?wsdl");
+                    QName qname = new QName("http://servidorclima/", "ServicioClimaService");
+
+                    Service service = Service.create(url, qname);
+                    ServicioClimaAbstract servidorClima = service.getPort(ServicioClimaAbstract.class);
+
+                    answerW = servidorClima.askClima(date);
                     cacheWeather.put(date, answerW);
                 } catch (Exception ex) {
                     answerW = "El servidor de clima no esta disponible, consulte mas tarde.";

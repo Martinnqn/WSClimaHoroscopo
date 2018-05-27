@@ -4,6 +4,12 @@
     <service name="ServicioCentral">
       <implementation-class>servidorcentral.ServicioCentral</implementation-class>
     </service>
+    <service name="ServicioClima">
+      <implementation-class>servidorclima.ServicioClima</implementation-class>
+    </service>
+    <service name="ServicioHoroscopo">
+      <implementation-class>servidorhoroscopo.ServicioHoroscopo</implementation-class>
+    </service>
   </services>
   <clients/>
 </jax-ws>
